@@ -26,7 +26,37 @@ export const authStatus = async () => {
 };
 
 export const logOutUser = async () => {
-  return await api.get("/auth/status", {
+  return await api.post("/auth/status", {
     withCredentials: true,
   });
+};
+
+export const setup2FA = async () => {
+  return await api.post(
+    "/auth/2fa/setup",
+    {},
+    {
+      withCredentials: true,
+    },
+  );
+};
+
+export const verify2FA = async (token) => {
+  return await api.post(
+    "/auth/2fa/verify",
+    { token },
+    {
+      withCredentials: true,
+    },
+  );
+};
+
+export const reset2FA = async () => {
+  return await api.post(
+    "/auth/2fa/reset",
+    {},
+    {
+      withCredentials: true,
+    },
+  );
 };
