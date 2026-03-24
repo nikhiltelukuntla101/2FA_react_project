@@ -1,9 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { setup2FA } from "../service/authApi";
 
 const TwoFASetup = ({ onSetupComplete }) => {
+  const [response, setResponse] = useState({});
   const [message, setMessage] = useState("");
+
+  const fetchQRCode = async () => {
+    const { data } = await setup2FA();
+    console.log("API FULL RESPONSE:", data);
+    setResponse(data);
+  };
+
+  useEffect(() => {
+    console.log(response);
+    fetchQRCode();
+  }, []);
+
   const copyClipBoard = async () => {
-    await navigator.clipboard.writeText();
+    await navigator.clipboard.writeText(response.secret);
     setMessage("Secret copied to clipboard");
   };
   return (
@@ -19,7 +33,15 @@ const TwoFASetup = ({ onSetupComplete }) => {
       </p>
       <div className="p-6">
         <div className="flex justify-center">
-          <img src="" alt="2FA QrCode" className="mb-4 border rounded-md" />
+          {response.qrCode ? (
+            <img
+              src={response.qrCode}
+              alt="2FA QrCode"
+              className="mb-4 border rounded-md"
+            />
+          ) : (
+            ""
+          )}
         </div>
         <div className="flex items-center mt-3 mb-3">
           <div className="border-t border-1 border-gray-200 flex-grow"></div>
@@ -33,7 +55,7 @@ const TwoFASetup = ({ onSetupComplete }) => {
           <input
             readOnly
             defaultValue=""
-            value=""
+            value={response?.secret || ""}
             className="w-full border rounded mt-2 text-xs text-gray-600 pt-4"
             onClick={copyClipBoard}
           />

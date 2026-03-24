@@ -47,14 +47,27 @@ export const authStatus = async (req, res) => {
     res.status(401).json({ message: "Unauthorized user" });
   }
 };
-export const logout = async (req, res) => {
-  if (!req.user) {
-    res.status(401).json({ message: "Unauthorized user" });
-  }
+export const logout = (req, res) => {
   req.logout((err) => {
-    if (err) return res.status(400).json({ message: "User not logged in" });
+    if (err) {
+      console.error("Logout error:", err);
+      return res.status(500).json({ message: "Logout failed" });
+    }
+
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Session destroy error:", err);
+          return res.status(500).json({ message: "Session destroy failed" });
+        }
+
+        res.clearCookie("connect.sid");
+        return res.status(200).json({ message: "Logout successful" });
+      });
+    } else {
+      return res.status(200).json({ message: "Logout successful" });
+    }
   });
-  res.status(200).json({ message: "Logout successful " });
 };
 
 // 2FA
@@ -76,6 +89,7 @@ export const setup2FA = async (req, res) => {
     const qrImageUrl = await qrCode.toDataURL(url);
     res.status(200).json({
       qrCode: qrImageUrl,
+      secret: secret.base32,
     });
   } catch (error) {
     res.status(500).json({ error: "Error in setting up 2FA", message: error });
